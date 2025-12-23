@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<body>
+  <h1>404friends – Feed</h1>
+
+  <p>
+    <a href="home.html">Home</a> |
+    <a id="adminLink" href="admin.html" style="display:none;">Admin</a>
+  </p>
+
+  <div id="composer" style="display:none;">
+    <textarea id="newPost" rows="3" cols="50" placeholder="Write a post…"></textarea><br>
+    <button id="postBtn">Post</button>
+    <span id="msg"></span>
+  </div>
+
+  <h2>Feed</h2>
+  <ul id="feed"></ul>
+
+  <button onclick="logout()">Logout</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      "https://tlxidqqcnpfxirmokhol.supabase.co",
+      "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
+    );
+
+    let currentUserId = null;
+
+    async function requireSession() {
+      const { data } = await sb.auth.getSession();
+      if (!data.session) {
+        window.location.href = "index.html";
+        return;
+      }
+      currentUserId = data.session.user.id;
+      document.getElementById("composer").style.display = "block";
+      checkAdmin();
+      loadFeed();
+    }
+
+    async function checkAdmin() {
+      const { data } = await sb
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", currentUserId)
+        .single();
+
+      if (data?.is_admin) {
+        document.getElementById("adminLink").style.display = "inline";
+      }
+    }
+
+    function esc(s) {
+      return s.replace(/[&<>"']/g, c =>
+        ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[c])
+      );
+    }
+
+    async function loadFeed() {
+      const { data } = await sb
+        .from("posts")
+        .select("id,user_id,content,created_at")
+        .order("created_at", { ascending: false });
+
+      const ul = document.getElementById("feed");
+      ul.innerHTML = "";
+
+      data.forEach(p => {
+        const li = document.createElement("li");
+        const mine = p.user_id === currentUserId;
+
+        li.innerHTML = `
+          <small>${esc(p.created_at)}</small><br>
+          <span id="c_${p.id}">${esc(p.content)}</span><br>
+          ${mine ? `
+            <button onclick="editPost('${p.id}')">Edit</button>
+            <button onclick="deletePost('${p.id}')">Delete</button>
+          ` : ``}
+          <hr>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    async function editPost(id) {
+      const div = document.getElementById("c_" + id);
+      const next = prompt("Edit post:", div.textContent);
+      if (next === null) return;
+
+      await sb.from("posts").update({ content: next }).eq("id", id);
+      loadFeed();
+    }
+
+    async function deletePost(id) {
+      if (!confirm("Delete post?")) return;
+      await sb.from("posts").delete().eq("id", id);
+      loadFeed();
+    }
+
+    document.getElementById("postBtn").onclick = async () => {
+      const content = document.getElementById("newPost").value.trim();
+      if (!content) return;
+
+      await sb.from("posts").insert({ user_id: currentUserId, content });
+      document.getElementById("newPost").value = "";
+      loadFeed();
+    };
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = "index.html";
+    }
+
+    requireSession();
+  </script>
+</body>
+</html>
