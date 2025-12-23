@@ -5,3 +5,18 @@
   <p>You are logged in.</p>
 </body>
 </html>
+<button onclick="logout()">Logout</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const sb = window.supabase.createClient(
+    "https://tlxidqqcnpfxirmokhol.supabase.co",
+    "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
+  );
+
+  async function logout() {
+    await sb.auth.signOut();
+    window.location.href = "index.html";
+  }
+</script>
+
