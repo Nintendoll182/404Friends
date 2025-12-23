@@ -4,6 +4,8 @@
   <h1>Welcome to 404friends</h1>
   <p>You are logged in.</p>
 
+  <p><a id="adminLink" href="admin.html" style="display:none;">Admin panel</a></p>
+
   <button onclick="logout()">Logout</button>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,9 +15,20 @@
       "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
     );
 
-    sb.auth.getSession().then(({ data }) => {
+    sb.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         window.location.href = "index.html";
+        return;
+      }
+
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", data.session.user.id)
+        .single();
+
+      if (profile?.is_admin) {
+        document.getElementById("adminLink").style.display = "inline";
       }
     });
 
