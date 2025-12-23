@@ -6,15 +6,28 @@
 </head>
 <body>
   <h1>404friends</h1>
-  <p id="status">Connecting…</p>
+
+  <input id="email" placeholder="email">
+  <input id="password" type="password" placeholder="password">
+  <button onclick="signup()">Login / Sign up</button>
+
+  <p id="msg"></p>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const supabaseUrl = "https://tlxidqqcnpfxirmokhol.supabase.co";
-    const supabaseKey = "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const supabase = window.supabase.createClient(
+      "https://tlxidqqcnpfxirmokhol.supabase.co",
+      "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
+    );
 
-    document.getElementById("status").textContent = "Supabase connected";
+    async function signup() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const { error } = await supabase.auth.signUp({ email, password });
+      document.getElementById("msg").textContent =
+        error ? error.message : "Check your email";
+    }
   </script>
 </body>
 </html>
