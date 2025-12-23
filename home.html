@@ -4,20 +4,6 @@
   <h1>Welcome to 404friends</h1>
   <p>You are logged in.</p>
 
-  <script>
-  const sb = window.supabase.createClient(
-    "https://tlxidqqcnpfxirmokhol.supabase.co",
-    "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
-  );
-
-  sb.auth.getSession().then(({ data }) => {
-    if (!data.session) {
-      window.location.href = "index.html";
-    }
-  });
-</script>
-
-
   <button onclick="logout()">Logout</button>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -26,6 +12,12 @@
       "https://tlxidqqcnpfxirmokhol.supabase.co",
       "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
     );
+
+    sb.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        window.location.href = "index.html";
+      }
+    });
 
     async function logout() {
       await sb.auth.signOut();
