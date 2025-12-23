@@ -1,33 +1,62 @@
 <!doctype html>
 <html>
 <body>
-  <input id="email" placeholder="email">
-  <input id="password" type="password" placeholder="password">
-  <button id="loginBtn">Login</button>
-  <p id="msg"></p>
+  <h1>404friends</h1>
+
+  <div id="inviteBox">
+    <input id="invite" placeholder="invite code">
+    <button id="inviteBtn">Enter</button>
+    <p id="inviteMsg"></p>
+  </div>
+
+  <div id="loginBox" style="display:none;">
+    <input id="email" placeholder="email">
+    <input id="password" type="password" placeholder="password">
+    <button id="loginBtn">Login</button>
+    <p id="msg"></p>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    const INVITE = "404FRIENDS2026";
+
     const sb = window.supabase.createClient(
       "https://tlxidqqcnpfxirmokhol.supabase.co",
       "sb_publishable_Xs-Tc9ZbdW5TwXVxlEdIqA_49yuVrS7"
     );
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
+    function okInvite(code) {
+      return (code || "").trim().toUpperCase() === INVITE;
+    }
+
+    // If already validated this browser, skip invite
+    if (localStorage.getItem("invite_ok") === "1") {
+      document.getElementById("inviteBox").style.display = "none";
+      document.getElementById("loginBox").style.display = "block";
+    }
+
+    document.getElementById("inviteBtn").onclick = () => {
+      const code = document.getElementById("invite").value;
+      if (!okInvite(code)) {
+        document.getElementById("inviteMsg").textContent = "Invalid invite code";
+        return;
+      }
+      localStorage.setItem("invite_ok", "1");
+      document.getElementById("inviteBox").style.display = "none";
+      document.getElementById("loginBox").style.display = "block";
+    };
+
+    document.getElementById("loginBtn").onclick = async () => {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      const { error } = await sb.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { error } = await sb.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        document.getElementById("msg").textContent = error.message;
-      } else {
-        window.location.href = "home.html";
-      }
-    });
+      document.getElementById("msg").textContent =
+        error ? error.message : "Logged in";
+
+      if (!error) window.location.href = "feed.html";
+    };
   </script>
 </body>
 </html>
