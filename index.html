@@ -14,7 +14,16 @@
     );
 
     document.getElementById("loginBtn").addEventListener("click", async () => {
-      document.getElementById("msg").textContent = "clicked";
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const { error } = await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      document.getElementById("msg").textContent =
+        error ? error.message : "Logged in";
     });
   </script>
 </body>
